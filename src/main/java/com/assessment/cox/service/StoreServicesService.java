@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
  * Created by akhilesh on 2/2/20.
  */
 @Service
-public class ServicesService {
+public class StoreServicesService {
 
   @Autowired
   private ServiceRepo serviceRepo;

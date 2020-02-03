@@ -1,7 +1,7 @@
 package com.assessment.cox.resource;
 
 import com.assessment.cox.entity.Services;
-import com.assessment.cox.service.ServicesService;
+import com.assessment.cox.service.StoreServicesService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -18,16 +18,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class ServiceResource {
 
   @Autowired
-  private ServicesService servicesService;
+  private StoreServicesService storeServicesService;
 
   @PostMapping(value="/services/match", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Services> getAllServices(@RequestBody List<String> serviceNames){
-    return servicesService.getAllMatchedServices(serviceNames);
+    return storeServicesService.getAllMatchedServices(serviceNames);
   }
 
   @GetMapping(value="/services/list", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Services> getAllServices(){
-    return servicesService.getAllServices();
+    return storeServicesService.getAllServices();
   }
 
 }

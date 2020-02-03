@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -39,50 +40,44 @@ public class StoresService {
 
   public List<Store> saveAll(List<StoreDTO> storeDTO, List<String> distinctServices){
 
-    Set<Services> distinctServicesSet = new HashSet<>();
-    distinctServices.forEach(e -> {
-      Services services = new Services();
-      services.setServiceName(e);
-      distinctServicesSet.add(services);
-    });
-    Map<String, Services> savedServicesList = serviceRepo.saveAll(distinctServicesSet).stream().collect(Collectors.toMap(Services::getServiceName, ser-> ser));
-    storeDTO.sort(Comparator.comparing(StoreDTO::getId));
+
     Set<Store> storesToBeSaved = new HashSet<>();
 
     storeDTO.forEach(s -> {
-
-      List<Services> servicesList = new ArrayList<>();
-      s.getServices().forEach(e-> {
-        if(savedServicesList.containsKey(e)){
-          servicesList.add(savedServicesList.get(e));
-        }else{
-          System.out.println(" the store dosent have the associated services mapped in the hashmap "+ s.getId() + "  service name "+ e);
-        }
-
-      });
       Store store = new Store();
-      store.setId(s.getId());
-      store.setType(s.getType());
-      store.setName(s.getName());
-      store.setAddress(s.getAddress());
-      store.setAddress2(s.getAddress2());
-      store.setCity(s.getCity());
-      store.setState(s.getState());
-      store.setZip(s.getZip());
-      store.setStoreServices(servicesList);
-      store.setStoreHours(getStoreHours(s.getHours(), store));
-      Location location = new Location();
-      location.setLattitude(s.getLocation().getLat());
-      location.setLongitude(s.getLocation().getLon());
-      location.setStore(store);
-      store.setLocation(location);
-      storesToBeSaved.add(store);
+      storesToBeSaved.add(buildStoreTobeSaved(s, store));
     });
 
     List<Store> store = storeRepo.saveAll(storesToBeSaved);
     return store;
   }
 
+
+  public StoreDTO createNewStore(StoreDTO storeDTO){
+    Store storeToBeSaved = new Store();
+    Store store = storeRepo.save(buildStoreTobeSaved(storeDTO, storeToBeSaved));
+    return generateStoreDTO(store);
+  }
+
+  public Store buildStoreTobeSaved(StoreDTO s, Store store){
+
+    store.setId(s.getId());
+    store.setType(s.getType());
+    store.setName(s.getName());
+    store.setAddress(s.getAddress());
+    store.setAddress2(s.getAddress2());
+    store.setCity(s.getCity());
+    store.setState(s.getState());
+    store.setZip(s.getZip());
+    store.setStoreServices(servicesToSaveOrUpdate(s));
+    store.setStoreHours(getStoreHours(s.getHours(), store));
+    Location location = new Location();
+    location.setLattitude(s.getLocation().getLat());
+    location.setLongitude(s.getLocation().getLon());
+    location.setStore(store);
+    store.setLocation(location);
+    return store;
+  }
 
   private List<StoreHour> getStoreHours(String hours, Store store){
     List<StoreHour> storehours = new ArrayList<>();
@@ -124,46 +119,41 @@ public class StoresService {
 
   @Transactional(readOnly = true)
   public StoreDTO findStoreByStoreId(Long storeId) {
-
       Optional<Store> store =  storeRepo.findById(storeId);
-
       if(!store.isPresent()){
-        return  null;
+        throw new  StoreApiException(400, "unable to find the store for the store id:"+storeId);
       }
     return generateStoreDTO(store.get());
-
   }
 
 
   private StoreDTO generateStoreDTO(Store store){
-    System.out.println("  store id :"+ store.getId());
 
     List<StoreHour> storeHourList = store.getStoreHours();
-    StringBuffer stringBuffer = new StringBuffer();
+    StringBuilder stringBuilder = new StringBuilder();
     storeHourList.forEach(
         e -> {
-          if (stringBuffer.length() <= 0) stringBuffer.append("");
-          else stringBuffer.append(";");
+          if (stringBuilder.length() <= 0) stringBuilder.append("");
+          else stringBuilder.append(";");
 
-          stringBuffer.append("").append(DaysOfWeek.valueOf(e.getDay()).day()).append(": ");
-
+          stringBuilder.append("").append(DaysOfWeek.valueOf(e.getDay()).day()).append(": ");
 
           if (e.getOpenTime() != null && e.getOpenTime().atOffset(ZoneOffset.UTC).getHour() > 0) {
-            stringBuffer.append(e.getOpenTime().atOffset(ZoneOffset.UTC).getHour());
+            stringBuilder.append(e.getOpenTime().atOffset(ZoneOffset.UTC).getHour());
           } else {
-            stringBuffer.append(0);
+            stringBuilder.append(0);
           }
           if (e.getOpenTime() != null && e.getOpenTime().atOffset(ZoneOffset.UTC).getMinute() > 0) {
-            stringBuffer.append(":").append(e.getOpenTime().atOffset(ZoneOffset.UTC).getMinute());
+            stringBuilder.append(":").append(e.getOpenTime().atOffset(ZoneOffset.UTC).getMinute());
           }
-          stringBuffer.append("-");
+          stringBuilder.append("-");
           if (e.getCloseTime() != null && e.getCloseTime().atOffset(ZoneOffset.UTC).getHour() > 0) {
-            stringBuffer.append(e.getCloseTime().atOffset(ZoneOffset.UTC).getHour());
+            stringBuilder.append(e.getCloseTime().atOffset(ZoneOffset.UTC).getHour());
           } else {
-            stringBuffer.append(0);
+            stringBuilder.append(0);
           }
           if (e.getCloseTime() != null && e.getCloseTime().atOffset(ZoneOffset.UTC).getMinute() > 0) {
-            stringBuffer.append(":").append(e.getCloseTime().atOffset(ZoneOffset.UTC).getMinute());
+            stringBuilder.append(":").append(e.getCloseTime().atOffset(ZoneOffset.UTC).getMinute());
           }
         });
 
@@ -178,7 +168,7 @@ public class StoresService {
         .zip(store.getZip())
         .location(LocationDTO.builder().lat(store.getLocation().getLattitude()).lon(store.getLocation().getLongitude()).build())
         .services(store.getStoreServices().stream().map(Services::getServiceName).collect(Collectors.toList()))
-        .hours(stringBuffer.toString())
+        .hours(stringBuilder.toString())
         .build();
   }
 
@@ -195,24 +185,6 @@ public class StoresService {
 
   private Store buildStoreToUpdate(StoreDTO updateStoreDTO, Store storeToUpdate){
 
-    Map<String, Services> servicesMap = serviceRepo.findByServiceNameIn(updateStoreDTO.getServices()).stream().collect(Collectors.toMap(x-> x.getServiceName(), x->x));
-
-    List<Services> matchedServicesList = new ArrayList<>();
-    List<Services> unmatchedServiceNameList = new ArrayList<>();
-    updateStoreDTO.getServices().forEach(e-> {
-      if(servicesMap.containsKey(e)){
-        matchedServicesList.add(servicesMap.get(e));
-      }else{
-
-        Services services = new Services();
-        services.setServiceName(e);
-        unmatchedServiceNameList.add(services);
-      }
-    });
-    if(!unmatchedServiceNameList.isEmpty()){
-      List<Services> newlyAddedServiceList = serviceRepo.saveAll(unmatchedServiceNameList);
-      matchedServicesList.addAll(newlyAddedServiceList);
-    }
 
     storeToUpdate.setType(updateStoreDTO.getType());
     storeToUpdate.setName(updateStoreDTO.getName());
@@ -221,7 +193,8 @@ public class StoresService {
     storeToUpdate.setCity(updateStoreDTO.getCity());
     storeToUpdate.setState(updateStoreDTO.getState());
     storeToUpdate.setZip(updateStoreDTO.getZip());
-    storeToUpdate.setStoreServices(matchedServicesList);
+    storeToUpdate.setStoreServices(servicesToSaveOrUpdate(updateStoreDTO));
+    storeToUpdate.setStoreServices(servicesToSaveOrUpdate(updateStoreDTO));
     List<StoreHour> storeHours = new CopyOnWriteArrayList<>();
     storeHours.addAll(storeToUpdate.getStoreHours());
     storeToUpdate.removeAllStoreHour(storeHours);
@@ -244,6 +217,28 @@ public class StoresService {
 
   public List<Services> getService(List<String> strings){
     return serviceRepo.findByServiceNameIn(strings);
+  }
+
+  private List<Services> servicesToSaveOrUpdate(StoreDTO storeDTO){
+
+    Map<String, Services> servicesMap = serviceRepo.findByServiceNameIn(storeDTO.getServices()).stream().collect(Collectors.toMap(x-> x.getServiceName(), x->x));
+    List<Services> matchedServicesList = new ArrayList<>();
+    List<Services> unmatchedServiceNameList = new ArrayList<>();
+    storeDTO.getServices().forEach(e-> {
+      if(Objects.nonNull(servicesMap) && servicesMap.containsKey(e)){
+        matchedServicesList.add(servicesMap.get(e));
+      }else{
+
+        Services services = new Services();
+        services.setServiceName(e);
+        unmatchedServiceNameList.add(services);
+      }
+    });
+    if(!unmatchedServiceNameList.isEmpty()){
+      List<Services> newlyAddedServiceList = serviceRepo.saveAll(unmatchedServiceNameList);
+      matchedServicesList.addAll(newlyAddedServiceList);
+    }
+  return matchedServicesList;
   }
 
 }
