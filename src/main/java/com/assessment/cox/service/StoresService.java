@@ -79,7 +79,7 @@ public class StoresService {
     return store;
   }
 
-  private List<StoreHour> getStoreHours(String hours, Store store){
+  protected List<StoreHour> getStoreHours(String hours, Store store){
     List<StoreHour> storehours = new ArrayList<>();
 
     Arrays.asList(hours.split(";")).forEach(e -> {
@@ -127,7 +127,7 @@ public class StoresService {
   }
 
 
-  private StoreDTO generateStoreDTO(Store store){
+  protected StoreDTO generateStoreDTO(Store store){
 
     List<StoreHour> storeHourList = store.getStoreHours();
     StringBuilder stringBuilder = new StringBuilder();
@@ -220,7 +220,7 @@ public class StoresService {
     return serviceRepo.findByServiceNameIn(strings);
   }
 
-  private List<Services> servicesToSaveOrUpdate(StoreDTO storeDTO){
+  protected List<Services> servicesToSaveOrUpdate(StoreDTO storeDTO){
 
     Map<String, Services> servicesMap = serviceRepo.findByServiceNameIn(storeDTO.getServices()).stream().collect(Collectors.toMap(x-> x.getServiceName(), x->x));
     List<Services> matchedServicesList = new ArrayList<>();
