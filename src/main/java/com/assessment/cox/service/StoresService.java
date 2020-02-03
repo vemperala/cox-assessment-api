@@ -134,7 +134,7 @@ public class StoresService {
     storeHourList.forEach(
         e -> {
           if (stringBuilder.length() <= 0) stringBuilder.append("");
-          else stringBuilder.append(";");
+          else stringBuilder.append("; ");
 
           stringBuilder.append("").append(DaysOfWeek.valueOf(e.getDay()).day()).append(": ");
 
@@ -206,6 +206,7 @@ public class StoresService {
     return storeToUpdate;
   }
 
+  @Transactional
   public StoreDTO deleteStore(Long storeId){
     Optional<Store> store = storeRepo.findById(storeId);
     if(!store.isPresent()){
