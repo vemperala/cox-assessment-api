@@ -28,4 +28,9 @@ to load the test dataset given for the test
 https://github.com/BestBuyAPIs/open-data-set/blob/master/stores.json
 
 please make a POST request to the below endpoint and pass the json as the body. the content type should be JSON.
+via POSTMAN
+
+http://localhost:8081/store-api/load/data
+
+
 
