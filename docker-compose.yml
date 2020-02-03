@@ -1,0 +1,12 @@
+version: "3"
+services:
+  coxdb:
+    image: mysql:5.7
+    restart: always
+    ports:
+        - "3308:3306"
+    environment:
+        - MYSQL_DATABASE=${COX_DB_NAME}
+        - MYSQL_PASSWORD=${COX_DB_PASSWORD}
+        - MYSQL_USER=${COX_DB_USER}
+        - MYSQL_ROOT_PASSWORD=${COX_DB_ROOT_PASSWORD}
