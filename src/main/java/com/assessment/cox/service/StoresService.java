@@ -195,7 +195,6 @@ public class StoresService {
     storeToUpdate.setState(updateStoreDTO.getState());
     storeToUpdate.setZip(updateStoreDTO.getZip());
     storeToUpdate.setStoreServices(servicesToSaveOrUpdate(updateStoreDTO));
-    storeToUpdate.setStoreServices(servicesToSaveOrUpdate(updateStoreDTO));
     Arrays.asList(updateStoreDTO.getHours().split(";")).forEach(e -> {
         String[] data = e.split(":",2);
         String[] times = data[1].split("-");
