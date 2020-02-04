@@ -199,7 +199,7 @@ public class StoresService {
     List<StoreHour> storeHours = new CopyOnWriteArrayList<>();
     storeHours.addAll(storeToUpdate.getStoreHours());
     storeToUpdate.removeAllStoreHour(storeHours);
-    getStoreHours(updateStoreDTO.getHours(),storeToUpdate).forEach(storeHour->storeToUpdate.addStoreHour(storeHour));
+    storeToUpdate.setStoreHours(getStoreHours(updateStoreDTO.getHours(),storeToUpdate));
     storeToUpdate.getLocation().setLattitude(updateStoreDTO.getLocation().getLat());
     storeToUpdate.getLocation().setLongitude(updateStoreDTO.getLocation().getLon());
     return storeToUpdate;
