@@ -226,12 +226,11 @@ public class StoresService {
     List<Services> matchedServicesList = new ArrayList<>();
     List<Services> unmatchedServiceNameList = new ArrayList<>();
     storeDTO.getServices().forEach(e-> {
-      if(Objects.nonNull(servicesMap) && servicesMap.containsKey(e)){
-        matchedServicesList.add(servicesMap.get(e));
+      if(Objects.nonNull(servicesMap) && servicesMap.containsKey(e.trim())){
+        matchedServicesList.add(servicesMap.get(e.trim()));
       }else{
-
         Services services = new Services();
-        services.setServiceName(e);
+        services.setServiceName(e.trim());
         unmatchedServiceNameList.add(services);
       }
     });
