@@ -222,7 +222,7 @@ public class StoresService {
 
   protected List<Services> servicesToSaveOrUpdate(StoreDTO storeDTO){
 
-    Map<String, Services> servicesMap = serviceRepo.findByServiceNameIn(storeDTO.getServices()).stream().collect(Collectors.toMap(x-> x.getServiceName(), x->x));
+    Map<String, Services> servicesMap = serviceRepo.findByServiceNameIn(storeDTO.getServices()).stream().collect(Collectors.toMap(x-> x.getServiceName().trim(), x->x));
     List<Services> matchedServicesList = new ArrayList<>();
     List<Services> unmatchedServiceNameList = new ArrayList<>();
     storeDTO.getServices().forEach(e-> {
