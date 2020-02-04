@@ -7,6 +7,7 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
@@ -20,7 +21,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@EqualsAndHashCode(exclude= {"location", "storeHours","storeServices"})
 @NamedQuery(name="Store.findAll", query="SELECT s FROM Store s")
 public class Store implements Serializable {
   private static final long serialVersionUID = 1L;

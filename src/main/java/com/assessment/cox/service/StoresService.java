@@ -156,6 +156,7 @@ public class StoresService {
             stringBuilder.append(":").append(e.getCloseTime().atOffset(ZoneOffset.UTC).getMinute());
           }
         });
+    
 
     return StoreDTO.builder()
         .id(store.getId())
@@ -199,10 +200,8 @@ public class StoresService {
     storeHours.addAll(storeToUpdate.getStoreHours());
     storeToUpdate.removeAllStoreHour(storeHours);
     getStoreHours(updateStoreDTO.getHours(),storeToUpdate).forEach(storeHour->storeToUpdate.addStoreHour(storeHour));
-    storeToUpdate.setStoreHours(getStoreHours(updateStoreDTO.getHours(), storeToUpdate));
     storeToUpdate.getLocation().setLattitude(updateStoreDTO.getLocation().getLat());
     storeToUpdate.getLocation().setLongitude(updateStoreDTO.getLocation().getLon());
-
     return storeToUpdate;
   }
 
