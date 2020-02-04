@@ -9,6 +9,7 @@ import com.assessment.cox.entity.Store;
 import com.assessment.cox.entity.StoreHour;
 import com.assessment.cox.exception.StoreApiException;
 import com.assessment.cox.repository.ServiceRepo;
+import com.assessment.cox.repository.StoreHourRepo;
 import com.assessment.cox.repository.StoreRepo;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -36,7 +37,6 @@ public class StoresService {
 
   @Autowired
   private ServiceRepo serviceRepo;
-
 
   public List<Store> saveAll(List<StoreDTO> storeDTO, List<String> distinctServices){
 
@@ -196,15 +196,30 @@ public class StoresService {
     storeToUpdate.setZip(updateStoreDTO.getZip());
     storeToUpdate.setStoreServices(servicesToSaveOrUpdate(updateStoreDTO));
     storeToUpdate.setStoreServices(servicesToSaveOrUpdate(updateStoreDTO));
-    List<StoreHour> storeHours = new CopyOnWriteArrayList<>();
-    storeHours.addAll(storeToUpdate.getStoreHours());
-    storeToUpdate.removeAllStoreHour(storeHours);
-    storeToUpdate.setStoreHours(getStoreHours(updateStoreDTO.getHours(),storeToUpdate));
+    Arrays.asList(updateStoreDTO.getHours().split(";")).forEach(e -> {
+        String[] data = e.split(":",2);
+        String[] times = data[1].split("-");
+        String opentime =  times[0].trim();
+        String closeTime = times[1].trim();
+        storeToUpdate.getStoreHours().stream().filter(x-> x.getDay().equalsIgnoreCase(DaysOfWeek.valueOf(data[0].trim()).namespace())).findFirst().map(s-> {
+          s.setOpenTime(Instant.EPOCH.atZone(ZoneOffset.UTC)
+              .withHour(Integer.parseInt(opentime.contains(":")?opentime.substring(0,opentime.indexOf(":")):opentime))
+              .withMinute(Integer.parseInt(opentime.contains(":")?opentime.substring(opentime.indexOf(":")+1):"0"))
+              .withSecond(0)
+              .toInstant());
+          s.setCloseTime(Instant.EPOCH.atZone(ZoneOffset.UTC)
+              .withHour(Integer.parseInt(closeTime.contains(":")?closeTime.substring(0,closeTime.indexOf(":")):closeTime))
+              .withMinute(Integer.parseInt(closeTime.contains(":")?closeTime.substring(closeTime.indexOf(":")+1):"0"))
+              .withSecond(0)
+              .toInstant());
+          return s;
+        });
+    });
     storeToUpdate.getLocation().setLattitude(updateStoreDTO.getLocation().getLat());
     storeToUpdate.getLocation().setLongitude(updateStoreDTO.getLocation().getLon());
     return storeToUpdate;
   }
-
+  
   @Transactional
   public StoreDTO deleteStore(Long storeId){
     Optional<Store> store = storeRepo.findById(storeId);

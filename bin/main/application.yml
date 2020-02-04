@@ -28,7 +28,7 @@ cox:
     data:
       spring:
         datasource:
-          url: jdbc:mysql://localhost:3308/cox?autoReconnect=true&useSSL=false&serverTimezone=UTC
+          url: jdbc:mysql://localhost:3308/cox?autoReconnect=true&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=UTC
           port: 3308
           username: cox
           password: my-secret-pw
